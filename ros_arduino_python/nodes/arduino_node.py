@@ -25,6 +25,7 @@ from ros_arduino_python.arduino_sensors import *
 from ros_arduino_msgs.srv import *
 from ros_arduino_python.base_controller import BaseController
 from geometry_msgs.msg import Twist
+from std_srvs.srv import Empty, EmptyResponse
 import os, time
 import thread
 
@@ -54,6 +55,11 @@ class ArduinoROS():
         now = rospy.Time.now()
         self.t_delta_sensors = rospy.Duration(1.0 / self.sensorstate_rate)
         self.t_next_sensors = now + self.t_delta_sensors
+
+	# Define lights and laser pins
+        self.pin_light_left  = 2;
+        self.pin_light_right = 3;
+        self.pin_laser  = 5;
         
         # Initialize a Twist message
         self.cmd_vel = Twist()
@@ -79,6 +85,14 @@ class ArduinoROS():
        
 	# A service to set pwm values for the pins
 	rospy.Service('~analog_write', AnalogWrite, self.AnalogWriteHandler)
+
+	# Lights services (on/off)
+        rospy.Service('lights_on', Empty, self.LightsOnHandler)
+        rospy.Service('lights_off', Empty, self.LightsOffHandler)
+
+        # Laser services (on/off)
+        rospy.Service('laser_on', Empty, self.LaserOnHandler)
+        rospy.Service('laser_off', Empty, self.LaserOffHandler)
 
 	# Initialize the controlller
         self.controller = Arduino(self.port, self.baud, self.timeout)
@@ -176,7 +190,39 @@ class ArduinoROS():
     def DigitalWriteHandler(self, req):
         self.controller.digital_write(req.pin, req.value)
         return DigitalWriteResponse()
-              
+
+    def LightsOnHandler(self, req):
+    	# Set directions
+    	self.controller.pin_mode(self.pin_light_left,  1)
+    	self.controller.pin_mode(self.pin_light_right, 1)
+    	# Set on
+    	self.controller.digital_write(self.pin_light_left,  0)
+    	self.controller.digital_write(self.pin_light_right, 0)
+	return EmptyResponse()
+
+    def LightsOffHandler(self, req):
+    	# Set directions
+    	self.controller.pin_mode(self.pin_light_left,  1)
+    	self.controller.pin_mode(self.pin_light_right, 1)
+    	# Set off
+    	self.controller.digital_write(self.pin_light_left,  1)
+    	self.controller.digital_write(self.pin_light_right, 1)
+	return EmptyResponse()
+
+    def LaserOnHandler(self, req):
+        # Set directions
+        self.controller.pin_mode(self.pin_laser,  1)
+        # Set on
+        self.controller.digital_write(self.pin_laser,  0)
+	return EmptyResponse()
+
+    def LaserOffHandler(self, req):
+        # Set directions
+        self.controller.pin_mode(self.pin_laser,  1)
+        # Set off
+        self.controller.digital_write(self.pin_laser,  1)
+	return EmptyResponse()
+    
     def AnalogWriteHandler(self, req):
         self.controller.analog_write(req.pin, req.value)
         return AnalogWriteResponse()
