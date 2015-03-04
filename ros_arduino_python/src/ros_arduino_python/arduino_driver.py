@@ -38,7 +38,7 @@ class Arduino:
     N_ANALOG_PORTS = 6
     N_DIGITAL_PORTS = 12
     
-    def __init__(self, port="/dev/ttyUSB0", baudrate=57600, timeout=0.5):
+    def __init__(self, port="/dev/ttyUSB1", baudrate=57600, timeout=0.5):
         
         self.PID_RATE = 30 # Do not change this!  It is a fixed property of the Arduino PID controller.
         self.PID_INTERVAL = 1000 / 30
@@ -345,7 +345,7 @@ class Arduino:
 """ Basic test for connectivity """
 if __name__ == "__main__":
     if os.name == "posix":
-        portName = "/dev/ttyACM0"
+        portName = "/dev/ttyUSB1"
     else:
         portName = "COM43" # Windows style COM port.
         
