@@ -46,9 +46,10 @@ class ArduinoROS():
         r = rospy.Rate(self.rate)
 
 	# Define lights and laser pins
-        self.pin_light_left  = 2;
-        self.pin_light_right = 3;
-        self.pin_laser  = 5;
+        self.pin_laser = 5
+        self.pin_light = 3
+        self.pin_usbl = 4
+        self.pin_sonar = 2
         
 	# Lights services (on/off)
         rospy.Service('lights_on', Empty, self.LightsOnHandler)
@@ -57,6 +58,14 @@ class ArduinoROS():
         # Laser services (on/off)
         rospy.Service('laser_on', Empty, self.LaserOnHandler)
         rospy.Service('laser_off', Empty, self.LaserOffHandler)
+
+        # USBL services (on/off)
+        rospy.Service('modem_on', Empty, self.UsblOnHandler)
+        rospy.Service('modem_off', Empty, self.UsblOffHandler)
+
+        # Sonar services (on/off)
+        rospy.Service('sonar_on', Empty, self.SonarOnHandler)
+        rospy.Service('sonar_off', Empty, self.SonarOffHandler)
 
 	# Initialize the controlller
         self.controller = Arduino(self.port, self.baud, self.timeout)
@@ -75,20 +84,16 @@ class ArduinoROS():
     
     def LightsOnHandler(self, req):
     	# Set directions
-    	self.controller.pin_mode(self.pin_light_left,  1)
-    	self.controller.pin_mode(self.pin_light_right, 1)
+    	self.controller.pin_mode(self.pin_light, 1)
     	# Set on
-    	self.controller.digital_write(self.pin_light_left,  0)
-    	self.controller.digital_write(self.pin_light_right, 0)
+    	self.controller.digital_write(self.pin_light, 0)
 	return EmptyResponse()
 
     def LightsOffHandler(self, req):
     	# Set directions
-    	self.controller.pin_mode(self.pin_light_left,  1)
-    	self.controller.pin_mode(self.pin_light_right, 1)
+    	self.controller.pin_mode(self.pin_light,  1)
     	# Set off
-    	self.controller.digital_write(self.pin_light_left,  1)
-    	self.controller.digital_write(self.pin_light_right, 1)
+    	self.controller.digital_write(self.pin_light, 1)
 	return EmptyResponse()
 
     def LaserOnHandler(self, req):
@@ -105,6 +110,34 @@ class ArduinoROS():
         self.controller.digital_write(self.pin_laser,  1)
 	return EmptyResponse()
     
+    def UsblOnHandler(self, req):
+        # Set directions
+        self.controller.pin_mode(self.pin_usbl,  1)
+        # Set on
+        self.controller.digital_write(self.pin_usbl,  0)
+	return EmptyResponse()
+
+    def UsblOffHandler(self, req):
+        # Set directions
+        self.controller.pin_mode(self.pin_usbl,  1)
+        # Set off
+        self.controller.digital_write(self.pin_usbl,  1)
+	return EmptyResponse()
+
+    def SonarOnHandler(self, req):
+        # Set directions
+        self.controller.pin_mode(self.pin_sonar,  1)
+        # Set on
+        self.controller.digital_write(self.pin_sonar,  0)
+	return EmptyResponse()
+
+    def SonarOffHandler(self, req):
+        # Set directions
+        self.controller.pin_mode(self.pin_sonar,  1)
+        # Set off
+        self.controller.digital_write(self.pin_sonar,  1)
+	return EmptyResponse()
+
     def shutdown(self):
         # Stop the robot
         try:
